@@ -6,31 +6,31 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from PIL import Image, ImageTk
 
-# Инициализация аудиосистемы
+# Initialize audio system
 pygame.mixer.init()
 
-# Воспроизведение музыкального файла
+# Play music file
 def play_music(file_path):
     try:
         if not os.path.exists(file_path):
-            raise FileNotFoundError(f"Файл не найден: {file_path}")
+            raise FileNotFoundError(f"File not found: {file_path}")
         pygame.mixer.music.load(file_path)
         pygame.mixer.music.play()
-        print(f"Воспроизведение: {file_path}")
+        print(f"Playing: {file_path}")
     except Exception as e:
-        messagebox.showerror("Ошибка воспроизведения", str(e))
+        messagebox.showerror("Playback error", str(e))
 
-# Сохранение музыкального файла
+# Save music file
 def save_music(source_path, destination_path):
     try:
         if not os.path.exists(source_path):
-            raise FileNotFoundError(f"Исходный файл не найден: {source_path}")
+            raise FileNotFoundError(f"Source file not found: {source_path}")
         shutil.copy(source_path, destination_path)
-        print(f"Файл сохранён в: {destination_path}")
+        print(f"File saved to: {destination_path}")
     except Exception as e:
-        messagebox.showerror("Ошибка сохранения", str(e))
+        messagebox.showerror("Save error", str(e))
 
-# Получение длительности трека
+# Get track duration
 def get_track_length(file_path):
     try:
         sound = pygame.mixer.Sound(file_path)
@@ -38,7 +38,7 @@ def get_track_length(file_path):
     except Exception:
         return 0
 
-# Загрузка иконки с масштабированием
+# Load and scale icon
 def load_icon(path, size=(24, 24)):
     try:
         img = Image.open(path)
@@ -47,7 +47,7 @@ def load_icon(path, size=(24, 24)):
     except Exception:
         return None
 
-# Создание графического интерфейса
+# Create graphical interface
 def create_gui():
     try:
         from tkinterdnd2 import TkinterDnD, DND_FILES
@@ -56,41 +56,41 @@ def create_gui():
     except ImportError:
         window = tk.Tk()
         drag_enabled = False
-        print("Drag-and-drop не доступен: tkinterdnd2 не установлен")
+        print("Drag-and-drop not available: tkinterdnd2 not installed")
 
-    window.title("Музыкальный плеер 🎵")
+    window.title("Music Player 🎵")
     window.geometry("700x500")
     window.configure(bg="#f0f0f0")
 
-    # Прогресс-бар
+    # Progress bar
     progress = tk.DoubleVar()
     progress_bar = ttk.Progressbar(window, variable=progress, maximum=100, length=500)
     progress_bar.pack(pady=20)
 
-    # Обновление прогресса
+    # Update progress
     def update_progress_bar(duration):
         if pygame.mixer.music.get_busy():
-            current_pos = pygame.mixer.music.get_pos() / 1000  # миллисекунды → секунды
+            current_pos = pygame.mixer.music.get_pos() / 1000  # milliseconds → seconds
             if duration > 0:
                 progress.set((current_pos / duration) * 100)
             window.after(500, lambda: update_progress_bar(duration))
         else:
             progress.set(0)
 
-    # Воспроизведение файла
+    # Play file
     def choose_file_to_play():
-        file_path = filedialog.askopenfilename(title="Выберите музыкальный файл")
+        file_path = filedialog.askopenfilename(title="Select music file")
         if file_path:
             play_music(file_path)
             duration = get_track_length(file_path)
             progress.set(0)
             update_progress_bar(duration)
 
-    # Сохранение файла
+    # Save file
     def choose_file_to_save():
-        source_path = filedialog.askopenfilename(title="Выберите исходный файл")
+        source_path = filedialog.askopenfilename(title="Select source file")
         if source_path:
-            destination_path = filedialog.asksaveasfilename(title="Выберите место сохранения")
+            destination_path = filedialog.asksaveasfilename(title="Select save location")
             if destination_path:
                 save_music(source_path, destination_path)
 
@@ -103,44 +103,44 @@ def create_gui():
             progress.set(0)
             update_progress_bar(duration)
 
-    # Загрузка иконок
+    # Load icons
     play_icon = load_icon("content/play_icon.png")
     save_icon = load_icon("content/save_icon.png")
     exit_icon = load_icon("content/exit_icon.png")
 
-    # Кнопки
-    play_button = tk.Button(window, text="▶ Воспроизвести", image=play_icon, compound="left",
+    # Buttons
+    play_button = tk.Button(window, text="▶ Play", image=play_icon, compound="left",
                             command=choose_file_to_play, padx=10, pady=5)
     play_button.pack(pady=10)
 
-    save_button = tk.Button(window, text="💾 Сохранить", image=save_icon, compound="left",
+    save_button = tk.Button(window, text="💾 Save", image=save_icon, compound="left",
                             command=choose_file_to_save, padx=10, pady=5)
     save_button.pack(pady=10)
 
-    exit_button = tk.Button(window, text="❌ Выход", image=exit_icon, compound="left",
+    exit_button = tk.Button(window, text="❌ Exit", image=exit_icon, compound="left",
                             command=window.quit, padx=10, pady=5)
     exit_button.pack(pady=10)
 
-    # Активация drag-and-drop
+    # Enable drag-and-drop
     if drag_enabled:
         window.drop_target_register(DND_FILES)
         window.dnd_bind('<<Drop>>', drop)
 
     window.mainloop()
 
-# Основная функция
+# Main function
 def main():
-    parser = argparse.ArgumentParser(description="Программа для работы с музыкальными файлами")
-    subparsers = parser.add_subparsers(dest="command", help="Команды")
+    parser = argparse.ArgumentParser(description="Music file utility")
+    subparsers = parser.add_subparsers(dest="command", help="Commands")
 
-    play_parser = subparsers.add_parser("play", help="Воспроизвести музыкальный файл")
-    play_parser.add_argument("file", help="Путь к музыкальному файлу")
+    play_parser = subparsers.add_parser("play", help="Play music file")
+    play_parser.add_argument("file", help="Path to music file")
 
-    save_parser = subparsers.add_parser("save", help="Сохранить музыкальный файл")
-    save_parser.add_argument("source", help="Исходный путь к файлу")
-    save_parser.add_argument("destination", help="Путь для сохранения файла")
+    save_parser = subparsers.add_parser("save", help="Save music file")
+    save_parser.add_argument("source", help="Source file path")
+    save_parser.add_argument("destination", help="Destination file path")
 
-    gui_parser = subparsers.add_parser("gui", help="Запустить графический интерфейс")
+    gui_parser = subparsers.add_parser("gui", help="Launch graphical interface")
 
     args = parser.parse_args()
 
@@ -153,6 +153,6 @@ def main():
     else:
         parser.print_help()
 
-# Запуск
+# Entry point
 if __name__ == "__main__":
     main()
